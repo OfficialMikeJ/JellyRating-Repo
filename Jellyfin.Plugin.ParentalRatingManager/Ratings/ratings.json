@@ -1,0 +1,222 @@
+{
+  "version": 1,
+  "ratings": [
+    {
+      "id": "us-g",
+      "displayName": "G",
+      "system": "us",
+      "score": 0,
+      "subScore": 0,
+      "jellyfinValue": "US:G",
+      "aliases": [ "G", "Rated G", "General", "General Audience" ]
+    },
+    {
+      "id": "us-pg",
+      "displayName": "PG",
+      "system": "us",
+      "score": 10,
+      "subScore": 0,
+      "jellyfinValue": "US:PG",
+      "aliases": [ "PG", "Rated PG", "Parental Guidance" ]
+    },
+    {
+      "id": "us-pg13",
+      "displayName": "PG-13",
+      "system": "us",
+      "score": 13,
+      "subScore": 0,
+      "jellyfinValue": "US:PG-13",
+      "aliases": [ "PG-13", "PG 13", "PG13", "Rated PG-13", "Rated PG13" ]
+    },
+    {
+      "id": "us-r",
+      "displayName": "R",
+      "system": "us",
+      "score": 17,
+      "subScore": 0,
+      "jellyfinValue": "US:R",
+      "aliases": [ "R", "Rated R", "Restricted" ]
+    },
+    {
+      "id": "us-nc17",
+      "displayName": "NC-17",
+      "system": "us",
+      "score": 17,
+      "subScore": 1,
+      "jellyfinValue": "US:NC-17",
+      "aliases": [ "NC-17", "NC 17", "NC17", "Rated NC-17", "Adults Only" ]
+    },
+    {
+      "id": "us-tv-y",
+      "displayName": "TV-Y",
+      "system": "us",
+      "score": 0,
+      "subScore": 0,
+      "jellyfinValue": "US:TV-Y",
+      "aliases": [ "TV-Y", "TV Y" ]
+    },
+    {
+      "id": "us-tv-y7",
+      "displayName": "TV-Y7",
+      "system": "us",
+      "score": 7,
+      "subScore": 0,
+      "jellyfinValue": "US:TV-Y7",
+      "aliases": [ "TV-Y7", "TV Y7", "TVY7" ]
+    },
+    {
+      "id": "us-tv-y7fv",
+      "displayName": "TV-Y7-FV",
+      "system": "us",
+      "score": 7,
+      "subScore": 1,
+      "jellyfinValue": "US:TV-Y7-FV",
+      "aliases": [ "TV-Y7-FV", "TV Y7 FV" ]
+    },
+    {
+      "id": "us-tv-g",
+      "displayName": "TV-G",
+      "system": "us",
+      "score": 0,
+      "subScore": 0,
+      "jellyfinValue": "US:TV-G",
+      "aliases": [ "TV-G", "TV G", "TVG" ]
+    },
+    {
+      "id": "us-tv-pg",
+      "displayName": "TV-PG",
+      "system": "us",
+      "score": 10,
+      "subScore": 0,
+      "jellyfinValue": "US:TV-PG",
+      "aliases": [ "TV-PG", "TV PG", "TVPG" ]
+    },
+    {
+      "id": "us-tv-14",
+      "displayName": "TV-14",
+      "system": "us",
+      "score": 14,
+      "subScore": 0,
+      "jellyfinValue": "US:TV-14",
+      "aliases": [ "TV-14", "TV 14", "TV14" ]
+    },
+    {
+      "id": "us-tv-ma",
+      "displayName": "TV-MA",
+      "system": "us",
+      "score": 17,
+      "subScore": 1,
+      "jellyfinValue": "US:TV-MA",
+      "aliases": [ "TV-MA", "TV MA", "TVMA", "Rated TV-MA" ]
+    },
+    {
+      "id": "ca-e",
+      "displayName": "E (Exempt)",
+      "system": "ca",
+      "score": 0,
+      "subScore": 0,
+      "jellyfinValue": "CA:E",
+      "aliases": [ "E", "Exempt", "CA-E" ]
+    },
+    {
+      "id": "ca-g",
+      "displayName": "G (Canada)",
+      "system": "ca",
+      "score": 0,
+      "subScore": 0,
+      "jellyfinValue": "CA:G",
+      "aliases": [ "CA-G", "G-CA", "G" ]
+    },
+    {
+      "id": "ca-c8",
+      "displayName": "C8",
+      "system": "ca",
+      "score": 8,
+      "subScore": 0,
+      "jellyfinValue": "CA:C8",
+      "aliases": [ "C8", "C-8", "C 8" ]
+    },
+    {
+      "id": "ca-pg",
+      "displayName": "PG (Canada)",
+      "system": "ca",
+      "score": 8,
+      "subScore": 1,
+      "jellyfinValue": "CA:PG",
+      "aliases": [ "CA-PG", "PG-CA", "PG" ]
+    },
+    {
+      "id": "ca-14a",
+      "displayName": "14A",
+      "system": "ca",
+      "score": 14,
+      "subScore": 0,
+      "jellyfinValue": "CA:14A",
+      "aliases": [ "14A", "14-A", "14 A", "CA-14A" ]
+    },
+    {
+      "id": "ca-14plus",
+      "displayName": "14+",
+      "system": "ca",
+      "score": 14,
+      "subScore": 1,
+      "jellyfinValue": "CA:14+",
+      "aliases": [ "14+", "CA-14+", "14 Plus" ]
+    },
+    {
+      "id": "ca-16plus",
+      "displayName": "16+",
+      "system": "ca",
+      "score": 16,
+      "subScore": 0,
+      "jellyfinValue": "CA:16+",
+      "aliases": [ "16+", "CA-16+", "16 Plus" ]
+    },
+    {
+      "id": "ca-18a",
+      "displayName": "18A",
+      "system": "ca",
+      "score": 18,
+      "subScore": 0,
+      "jellyfinValue": "CA:18A",
+      "aliases": [ "18A", "18-A", "18 A", "CA-18A" ]
+    },
+    {
+      "id": "ca-18plus",
+      "displayName": "18+",
+      "system": "ca",
+      "score": 18,
+      "subScore": 1,
+      "jellyfinValue": "CA:18+",
+      "aliases": [ "18+", "CA-18+", "18 Plus" ]
+    },
+    {
+      "id": "ca-r",
+      "displayName": "R (Canada)",
+      "system": "ca",
+      "score": 18,
+      "subScore": 1,
+      "jellyfinValue": "CA:R",
+      "aliases": [ "CA-R", "R-CA", "R" ]
+    },
+    {
+      "id": "ca-a",
+      "displayName": "A (Adult)",
+      "system": "ca",
+      "score": 1000,
+      "subScore": 0,
+      "jellyfinValue": "CA:A",
+      "aliases": [ "CA-A", "Adult" ]
+    },
+    {
+      "id": "unrated",
+      "displayName": "Unrated",
+      "system": "common",
+      "score": null,
+      "subScore": null,
+      "jellyfinValue": "NR",
+      "isUnrated": true,
+      "aliases": [ "Unrated", "Not Rated", "NR", "N/A", "NA", "UR", "Not Rated or Unrated" ]
+    }
+  ]
+}

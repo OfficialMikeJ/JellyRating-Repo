@@ -1,0 +1,490 @@
+<div id="ParentalRatingManagerPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
+  <style>
+    #ParentalRatingManagerPage .prm-tabs { display:flex; gap:.4em; margin-bottom:1.2em; flex-wrap:wrap; }
+    #ParentalRatingManagerPage .prm-tab { padding:.5em 1.1em; border-radius:2em; border:1px solid rgba(128,128,128,.4); cursor:pointer; background:transparent; color:inherit; font-size:.95em; }
+    #ParentalRatingManagerPage .prm-tab.prm-active { background:rgba(0,164,220,.25); border-color:#00a4dc; }
+    #ParentalRatingManagerPage .prm-section { display:none; }
+    #ParentalRatingManagerPage .prm-section.prm-active { display:block; }
+    #ParentalRatingManagerPage .prm-cards { display:flex; gap:1em; flex-wrap:wrap; margin:1em 0; }
+    #ParentalRatingManagerPage .prm-card { border:1px solid rgba(128,128,128,.3); border-radius:.5em; padding:1em 1.6em; min-width:9em; }
+    #ParentalRatingManagerPage .prm-card .num { font-size:2em; font-weight:600; }
+    #ParentalRatingManagerPage .prm-card .lbl { opacity:.7; font-size:.85em; }
+    #ParentalRatingManagerPage table.prm-table { width:100%; border-collapse:collapse; margin:.8em 0; }
+    #ParentalRatingManagerPage .prm-table td, #ParentalRatingManagerPage .prm-table th { padding:.45em .6em; text-align:left; border-bottom:1px solid rgba(128,128,128,.2); }
+    #ParentalRatingManagerPage .prm-badge { display:inline-block; padding:.1em .55em; border-radius:1em; font-size:.75em; margin-left:.5em; vertical-align:middle; }
+    #ParentalRatingManagerPage .prm-badge.override { background:rgba(0,164,220,.25); }
+    #ParentalRatingManagerPage .prm-badge.inherit { background:rgba(200,150,0,.25); }
+    #ParentalRatingManagerPage .prm-badge.meta { background:rgba(120,120,120,.25); }
+    #ParentalRatingManagerPage .prm-badge.unrated { background:rgba(200,60,60,.25); }
+    #ParentalRatingManagerPage .prm-badge.admin { background:rgba(200,60,160,.3); }
+    #ParentalRatingManagerPage .prm-toolbar { display:flex; gap:.6em; align-items:center; flex-wrap:wrap; margin:.7em 0; }
+    #ParentalRatingManagerPage .prm-status { margin:.8em 0; padding:.6em 1em; border-radius:.4em; display:none; }
+    #ParentalRatingManagerPage .prm-status.ok { display:block; background:rgba(60,180,60,.18); }
+    #ParentalRatingManagerPage .prm-status.err { display:block; background:rgba(210,60,60,.2); }
+    #ParentalRatingManagerPage .prm-seasonrow td { padding-left:2.2em; }
+    #ParentalRatingManagerPage .prm-expand { cursor:pointer; opacity:.75; margin-right:.4em; user-select:none; }
+    #ParentalRatingManagerPage input[type="checkbox"].prm-check { transform:scale(1.3); }
+  </style>
+  <div data-role="content">
+    <div class="content-primary">
+      <h1>Parental Rating Manager</h1>
+      <div class="prm-tabs">
+        <button type="button" class="prm-tab prm-active" data-tab="dashboard">Dashboard</button>
+        <button type="button" class="prm-tab" data-tab="media">Media Ratings</button>
+        <button type="button" class="prm-tab" data-tab="users">User Restrictions</button>
+        <button type="button" class="prm-tab" data-tab="ratings">Rating Systems</button>
+        <button type="button" class="prm-tab" data-tab="settings">Settings</button>
+      </div>
+      <div class="prm-status" id="prmStatus"></div>
+
+      <!-- ============ DASHBOARD ============ -->
+      <div class="prm-section prm-active" id="prm-sec-dashboard">
+        <h2>Overview</h2>
+        <div class="prm-cards">
+          <div class="prm-card"><div class="num" id="statAssigned">–</div><div class="lbl">Plugin-rated items</div></div>
+          <div class="prm-card"><div class="num" id="statUsers">–</div><div class="lbl">Restricted users</div></div>
+          <div class="prm-card"><div class="num" id="statLibs">–</div><div class="lbl">Libraries</div></div>
+          <div class="prm-card"><div class="num" id="statRated">–</div><div class="lbl">Rated items</div></div>
+          <div class="prm-card"><div class="num" id="statUnrated">–</div><div class="lbl">Unrated items</div></div>
+          <div class="prm-card"><div class="num" id="statStale">–</div><div class="lbl">Stale records</div></div>
+        </div>
+        <div class="prm-toolbar">
+          <button type="button" class="emby-button button-flat" id="btnRefreshStats">Refresh</button>
+          <button type="button" class="emby-button button-flat" id="btnPrune">Prune stale records</button>
+        </div>
+      </div>
+
+      <!-- ============ MEDIA RATINGS ============ -->
+      <div class="prm-section" id="prm-sec-media">
+        <h2>Media Ratings</h2>
+        <div class="prm-toolbar">
+          <label>Library: <select id="selLibrary" class="emby-select-withcolor emby-select"><option value="">— choose —</option></select></label>
+          <label>Search: <input id="txtSearch" type="search" class="emby-input" placeholder="Title…" style="width:11em"/></label>
+          <label>Type: <select id="selKind" class="emby-select-withcolor emby-select"><option value="">All</option><option value="movies">Movies/Docs</option><option value="series">Series</option></select></label>
+          <label>Show: <select id="selFilter" class="emby-select-withcolor emby-select"><option value="All">All</option><option value="Rated">Rated</option><option value="Unrated">Unrated</option><option value="ManuallyRated">Manually Rated</option></select></label>
+          <label>Rating: <select id="selRatingFilter" class="emby-select-withcolor emby-select"><option value="">Any</option></select></label>
+          <button type="button" class="emby-button button-flat" id="btnSearch">Apply</button>
+        </div>
+        <div class="prm-toolbar">
+          <button type="button" class="emby-button button-flat" id="btnSelectAll">Select All</button>
+          <button type="button" class="emby-button button-flat" id="btnDeselectAll">Deselect All</button>
+          <button type="button" class="emby-button button-flat" id="btnSelectMovies">Select All Movies</button>
+          <button type="button" class="emby-button button-flat" id="btnSelectSeries">Select All Series</button>
+        </div>
+        <div class="prm-toolbar" style="background:rgba(128,128,128,.12);padding:.7em;border-radius:.4em">
+          <strong id="selCount">0 selected</strong>
+          <label>Rating: <select id="selApplyRating" class="emby-select-withcolor emby-select"><option value="">— choose rating —</option></select></label>
+          <button type="button" class="emby-button button-flat raised" id="btnSaveRatings" style="background:#00a4dc">Save Ratings</button>
+          <button type="button" class="emby-button button-flat" id="btnRemoveOverride">Remove Override</button>
+        </div>
+        <table class="prm-table">
+          <thead><tr><th style="width:2em"></th><th>Title</th><th style="width:6em">Kind</th><th style="width:5em">Year</th><th style="width:16em">Effective rating</th></tr></thead>
+          <tbody id="mediaBody"><tr><td colspan="5">Select a library to begin.</td></tr></tbody>
+        </table>
+        <div class="prm-toolbar">
+          <button type="button" class="emby-button button-flat" id="btnPrevPage">◀ Prev</button>
+          <span id="pageInfo">Page 1</span>
+          <button type="button" class="emby-button button-flat" id="btnNextPage">Next ▶</button>
+        </div>
+      </div>
+
+      <!-- ============ USER RESTRICTIONS ============ -->
+      <div class="prm-section" id="prm-sec-users">
+        <h2>User Restrictions</h2>
+        <p>Select users and assign a maximum permitted content level. Content above the level is hidden and blocked for every Jellyfin client.</p>
+        <div class="prm-toolbar">
+          <button type="button" class="emby-button button-flat" id="btnUsersSelectAll">Select All</button>
+          <button type="button" class="emby-button button-flat" id="btnUsersDeselect">Deselect All</button>
+        </div>
+        <table class="prm-table">
+          <thead><tr><th style="width:2em"></th><th>User</th><th style="width:10em">Max rating</th><th style="width:10em">Managed</th></tr></thead>
+          <tbody id="usersBody"><tr><td colspan="4">Loading…</td></tr></tbody>
+        </table>
+        <div class="prm-toolbar" style="background:rgba(128,128,128,.12);padding:.7em;border-radius:.4em">
+          <strong id="userSelCount">0 selected</strong>
+          <label>Maximum allowed rating: <select id="selUserMax" class="emby-select-withcolor emby-select"><option value="">— choose —</option><option value="__none__">Unrestricted</option></select></label>
+          <button type="button" class="emby-button button-flat raised" id="btnSaveUsers" style="background:#00a4dc">Save user policy</button>
+        </div>
+      </div>
+
+      <!-- ============ RATING SYSTEMS ============ -->
+      <div class="prm-section" id="prm-sec-ratings">
+        <h2>Rating Systems</h2>
+        <p>Normalized rating catalogue. Raw metadata values are normalized before evaluation; Canadian and US levels are compared through a fixed score table, never by name.</p>
+        <table class="prm-table">
+          <thead><tr><th>System</th><th>Id</th><th>Display</th><th>Level (score/sub)</th></tr></thead>
+          <tbody id="ratingsBody"></tbody>
+        </table>
+        <h3>Add custom rating</h3>
+        <div class="prm-toolbar">
+          <label>Name: <input id="custName" class="emby-input" style="width:8em" placeholder="e.g. Family"/></label>
+          <label>Score: <input id="custScore" type="number" class="emby-input" style="width:5em" placeholder="10"/></label>
+          <label>Sub-score: <input id="custSub" type="number" class="emby-input" style="width:5em" placeholder="0"/></label>
+          <label>Jellyfin value: <input id="custJf" class="emby-input" style="width:9em" placeholder="US:PG"/></label>
+          <label>Aliases (csv): <input id="custAliases" class="emby-input" style="width:12em"/></label>
+          <button type="button" class="emby-button button-flat" id="btnAddCustom">Add</button>
+        </div>
+      </div>
+
+      <!-- ============ SETTINGS ============ -->
+      <div class="prm-section" id="prm-sec-settings">
+        <h2>Settings</h2>
+        <h3>Unrated content</h3>
+        <label class="checkboxContainer"><input type="radio" name="unratedPolicy" value="0" class="emby-checkbox"/><span>Allow unrated content for restricted users</span></label>
+        <label class="checkboxContainer"><input type="radio" name="unratedPolicy" value="1" class="emby-checkbox"/><span>Block unrated content for restricted users</span></label>
+        <label class="checkboxContainer"><input type="radio" name="unratedPolicy" value="2" class="emby-checkbox"/><span>Treat unrated content as rating:</span></label>
+        <div class="prm-toolbar"><select id="selUnratedEquiv" class="emby-select-withcolor emby-select"></select></div>
+        <h3>General</h3>
+        <label class="checkboxContainer"><input type="checkbox" id="chkDebug" class="emby-checkbox"/><span>Enable verbose debug logging</span></label>
+        <div class="prm-toolbar">
+          <label>Ask for confirmation above <input id="numBulk" type="number" class="emby-input" style="width:5em"/> selected items</label>
+          <button type="button" class="emby-button button-flat raised" id="btnSaveSettings" style="background:#00a4dc">Save Settings</button>
+        </div>
+        <p id="dataPath" style="opacity:.6;font-size:.85em"></p>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+    (function () {
+      var PRM = {
+        page: null, libraries: [], ratings: [], users: [],
+        pageIndex: 0, pageSize: 100, totalCount: 0,
+        bulkThreshold: 25, expanded: {}
+      };
+
+      function el(id) { return PRM.page.querySelector('#' + id); }
+      function status(msg, isErr) {
+        var s = el('prmStatus');
+        s.textContent = msg; s.className = 'prm-status ' + (isErr ? 'err' : 'ok');
+      }
+      function api(path, opts) {
+        opts = opts || {};
+        return fetch(ApiClient.getUrl('ParentalRatingManager' + path), {
+          method: opts.method || 'GET',
+          headers: {
+            'Authorization': 'MediaBrowser Token="' + ApiClient.accessToken() + '"',
+            'Content-Type': 'application/json'
+          },
+          body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined
+        }).then(function (r) {
+          if (r.status === 204) return null;
+          if (!r.ok) return r.text().then(function (t) { throw new Error(t || ('HTTP ' + r.status)); });
+          return r.json();
+        });
+      }
+
+      // ---------- shared helpers ----------
+      function ratingBadge(e) {
+        var name = e.displayName || 'Unrated';
+        var cls = 'unrated', suffix = '';
+        if (e.source === 'PluginOverride') cls = 'override';
+        else if (e.source === 'InheritedOverride') { cls = 'inherit'; suffix = ' (Inherited)'; }
+        else if (e.source === 'Metadata') { cls = 'meta'; suffix = e.inheritedFromName ? ' (Metadata, inherited)' : ' (Metadata)'; }
+        return '<span class="prm-badge ' + cls + '">' + name + suffix + '</span>';
+      }
+      function ratingOptions(includeUnratedEntry) {
+        var html = '';
+        ['us', 'ca', 'common', 'custom'].forEach(function (sys) {
+          var group = PRM.ratings.filter(function (r) { return r.system === sys; });
+          if (!group.length) return;
+          html += '<optgroup label="' + (sys === 'us' ? 'United States' : sys === 'ca' ? 'Canada' : sys === 'common' ? 'Other' : 'Custom') + '">';
+          group.forEach(function (r) {
+            if (r.isUnrated && !includeUnratedEntry) return;
+            html += '<option value="' + r.id + '">' + r.displayName + '</option>';
+          });
+          html += '</optgroup>';
+        });
+        return html;
+      }
+
+      // ---------- dashboard ----------
+      function loadStats() {
+        api('/stats').then(function (s) {
+          el('statAssigned').textContent = s.assignedCount;
+          el('statUsers').textContent = s.managedUserCount;
+          el('statLibs').textContent = s.libraryCount;
+          el('statRated').textContent = s.ratedItemCount;
+          el('statUnrated').textContent = s.unratedItemCount;
+          el('statStale').textContent = s.staleRecordCount;
+        }).catch(function (e) { status(e.message, true); });
+      }
+
+      // ---------- media ratings ----------
+      function loadLibraries() {
+        api('/libraries').then(function (libs) {
+          PRM.libraries = libs;
+          var sel = el('selLibrary');
+          sel.innerHTML = '<option value="">— choose —</option>';
+          libs.forEach(function (l) {
+            sel.innerHTML += '<option value="' + l.id + '">' + l.name + (l.collectionType ? ' (' + l.collectionType + ')' : '') + '</option>';
+          });
+        }).catch(function (e) { status(e.message, true); });
+      }
+
+      function loadItems() {
+        var libId = el('selLibrary').value;
+        if (!libId) { el('mediaBody').innerHTML = '<tr><td colspan="5">Select a library to begin.</td></tr>'; return; }
+        var q = '?page=' + PRM.pageIndex + '&pageSize=' + PRM.pageSize
+          + '&filter=' + encodeURIComponent(el('selFilter').value)
+          + '&kind=' + encodeURIComponent(el('selKind').value)
+          + '&ratingId=' + encodeURIComponent(el('selRatingFilter').value)
+          + '&search=' + encodeURIComponent(el('txtSearch').value);
+        api('/libraries/' + libId + '/items' + q).then(function (res) {
+          PRM.totalCount = res.totalCount;
+          renderItems(res.items);
+          el('pageInfo').textContent = 'Page ' + (res.page + 1) + ' — ' + res.totalCount + ' item(s)';
+        }).catch(function (e) { status(e.message, true); });
+      }
+
+      function renderItems(items) {
+        var body = el('mediaBody');
+        if (!items.length) { body.innerHTML = '<tr><td colspan="5">No items match.</td></tr>'; return; }
+        var html = '';
+        items.forEach(function (i) {
+          html += '<tr data-id="' + i.id + '">'
+            + '<td><input type="checkbox" class="prm-check" data-id="' + i.id + '" data-kind="' + i.kind + '"/></td>'
+            + '<td>' + (i.kind === 'Series' ? '<span class="prm-expand" data-series="' + i.id + '">▸ seasons</span>' : '') + escapeHtml(i.name) + '</td>'
+            + '<td>' + i.kind + (i.kind === 'Series' && i.seasonCount ? ' (' + i.seasonCount + ')' : '') + '</td>'
+            + '<td>' + (i.productionYear || '') + '</td>'
+            + '<td>' + ratingBadge(i.effective) + '</td></tr>';
+        });
+        body.innerHTML = html;
+        bindRowEvents();
+        updateSelCount();
+      }
+
+      function bindRowEvents() {
+        PRM.page.querySelectorAll('#mediaBody .prm-check').forEach(function (c) {
+          c.addEventListener('change', updateSelCount);
+        });
+        PRM.page.querySelectorAll('#mediaBody .prm-expand').forEach(function (x) {
+          x.addEventListener('click', function () { toggleSeasons(x, x.getAttribute('data-series')); });
+        });
+      }
+
+      function toggleSeasons(span, seriesId) {
+        var row = span.closest('tr');
+        if (PRM.expanded[seriesId]) {
+          PRM.page.querySelectorAll('tr.prm-seasonrow[data-series="' + seriesId + '"]').forEach(function (r) { r.remove(); });
+          delete PRM.expanded[seriesId];
+          span.textContent = '▸ seasons';
+          return;
+        }
+        api('/items/' + seriesId + '/seasons').then(function (seasons) {
+          PRM.expanded[seriesId] = true;
+          span.textContent = '▾ seasons';
+          var after = row;
+          seasons.forEach(function (s) {
+            var tr = document.createElement('tr');
+            tr.className = 'prm-seasonrow';
+            tr.setAttribute('data-series', seriesId);
+            tr.innerHTML = '<td><input type="checkbox" class="prm-check" data-id="' + s.id + '" data-kind="Season"/></td>'
+              + '<td>' + escapeHtml(s.name) + '</td><td>Season</td><td>' + (s.productionYear || '') + '</td>'
+              + '<td>' + ratingBadge(s.effective) + '</td>';
+            after.parentNode.insertBefore(tr, after.nextSibling);
+            after = tr;
+          });
+          PRM.page.querySelectorAll('tr.prm-seasonrow[data-series="' + seriesId + '"] .prm-check').forEach(function (c) {
+            c.addEventListener('change', updateSelCount);
+          });
+        }).catch(function (e) { status(e.message, true); });
+      }
+
+      function checkedIds(kindFilter) {
+        var ids = [];
+        PRM.page.querySelectorAll('#mediaBody .prm-check:checked').forEach(function (c) {
+          if (!kindFilter || c.getAttribute('data-kind') === kindFilter) ids.push(c.getAttribute('data-id'));
+        });
+        return ids;
+      }
+      function updateSelCount() { el('selCount').textContent = checkedIds().length + ' selected'; }
+      function setAllChecks(on, kindFilter) {
+        PRM.page.querySelectorAll('#mediaBody .prm-check').forEach(function (c) {
+          if (!kindFilter || c.getAttribute('data-kind') === kindFilter) c.checked = on;
+        });
+        updateSelCount();
+      }
+
+      function saveRatings(remove) {
+        var ids = checkedIds();
+        if (!ids.length) { status('Select at least one item.', true); return; }
+        var ratingId = remove ? null : el('selApplyRating').value;
+        if (!remove && !ratingId) { status('Choose a rating first.', true); return; }
+        if (ids.length >= PRM.bulkThreshold && !confirm('You are about to ' + (remove ? 'remove overrides on' : 'assign ' + el('selApplyRating').selectedOptions[0].text + ' to') + ' ' + ids.length + ' media items.\n\nContinue?')) {
+          return;
+        }
+        api('/items/assign', { method: 'POST', body: { itemIds: ids, ratingId: ratingId } }).then(function (res) {
+          if (res.failed === 0) { status('Ratings saved successfully.'); setAllChecks(false); loadItems(); }
+          else { status('Completed with ' + res.failed + ' failure(s). Check the server log for details.', true); loadItems(); }
+        }).catch(function (e) { status('Unable to save rating changes. ' + e.message, true); });
+      }
+
+      // ---------- users ----------
+      function loadUsers() {
+        api('/users').then(function (users) {
+          PRM.users = users;
+          var html = '';
+          users.forEach(function (u) {
+            html += '<tr><td><input type="checkbox" class="prm-check prm-user" data-id="' + u.id + '"/></td>'
+              + '<td>' + escapeHtml(u.name) + (u.isAdministrator ? '<span class="prm-badge admin">admin</span>' : '') + '</td>'
+              + '<td>' + (u.maxRatingDisplayName || (u.nativeMaxScore != null ? 'native(' + u.nativeMaxScore + '/' + (u.nativeMaxSubScore || 0) + ')' : '—')) + '</td>'
+              + '<td>' + (u.isManaged ? 'plugin' : '') + '</td></tr>';
+          });
+          el('usersBody').innerHTML = html || '<tr><td colspan="4">No users.</td></tr>';
+          PRM.page.querySelectorAll('.prm-user').forEach(function (c) {
+            c.addEventListener('change', function () {
+              el('userSelCount').textContent = PRM.page.querySelectorAll('.prm-user:checked').length + ' selected';
+            });
+          });
+        }).catch(function (e) { status(e.message, true); });
+      }
+
+      function saveUserPolicy() {
+        var ids = [];
+        PRM.page.querySelectorAll('.prm-user:checked').forEach(function (c) { ids.push(c.getAttribute('data-id')); });
+        if (!ids.length) { status('Select at least one user.', true); return; }
+        var v = el('selUserMax').value;
+        if (!v) { status('Choose a maximum rating (or Unrestricted).', true); return; }
+        var maxRatingId = v === '__none__' ? null : v;
+        var adminTargets = PRM.users.filter(function (u) { return ids.indexOf(u.id) >= 0 && u.isAdministrator; });
+        if (adminTargets.length && maxRatingId && !confirm('You are restricting administrator account(s): ' + adminTargets.map(function (a) { return a.name; }).join(', ') + '.\n\nAdmins are never blocked by Jellyfin parental controls, but continue?')) {
+          return;
+        }
+        api('/users/policy', { method: 'POST', body: { userIds: ids, maxRatingId: maxRatingId } }).then(function (res) {
+          if (res.failed === 0) { status('User policy saved successfully.'); loadUsers(); }
+          else { status('Completed with ' + res.failed + ' failure(s). Check the server log.', true); loadUsers(); }
+        }).catch(function (e) { status('Unable to save user policy. ' + e.message, true); });
+      }
+
+      // ---------- rating systems ----------
+      function renderCatalog() {
+        var html = '';
+        PRM.ratings.forEach(function (r) {
+          html += '<tr><td>' + r.system + '</td><td>' + r.id + '</td><td>' + r.displayName + '</td><td>' + (r.isUnrated ? 'unrated' : '') + '</td></tr>';
+        });
+        el('ratingsBody').innerHTML = html;
+      }
+
+      function loadConfig() {
+        api('/config').then(function (c) {
+          PRM.bulkThreshold = c.bulkConfirmationThreshold || 25;
+          PRM.page.querySelectorAll('input[name="unratedPolicy"]').forEach(function (r) {
+            r.checked = parseInt(r.value) === c.unratedPolicy;
+          });
+          el('chkDebug').checked = !!c.enableDebugLogging;
+          el('numBulk').value = c.bulkConfirmationThreshold || 25;
+        }).catch(function (e) { status(e.message, true); });
+      }
+
+      function saveSettings() {
+        var policy = 0;
+        PRM.page.querySelectorAll('input[name="unratedPolicy"]').forEach(function (r) { if (r.checked) policy = parseInt(r.value); });
+        api('/config', {
+          method: 'PUT',
+          body: {
+            unratedPolicy: policy,
+            unratedEquivalentRatingId: el('selUnratedEquiv').value,
+            enableDebugLogging: el('chkDebug').checked,
+            bulkConfirmationThreshold: parseInt(el('numBulk').value) || 25,
+            customRatings: PRM.customRatings || []
+          }
+        }).then(function () {
+          PRM.bulkThreshold = parseInt(el('numBulk').value) || 25;
+          status('Settings saved successfully.');
+        }).catch(function (e) { status('Unable to save settings. ' + e.message, true); });
+      }
+
+      function escapeHtml(s) {
+        return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      // ---------- init ----------
+      function init(page) {
+        if (PRM.initialized) return;
+        PRM.initialized = true;
+        PRM.page = page;
+
+        page.querySelectorAll('.prm-tab').forEach(function (tab) {
+          tab.addEventListener('click', function () {
+            page.querySelectorAll('.prm-tab').forEach(function (t) { t.classList.remove('prm-active'); });
+            page.querySelectorAll('.prm-section').forEach(function (s) { s.classList.remove('prm-active'); });
+            tab.classList.add('prm-active');
+            page.querySelector('#prm-sec-' + tab.getAttribute('data-tab')).classList.add('prm-active');
+            if (tab.getAttribute('data-tab') === 'users') loadUsers();
+            if (tab.getAttribute('data-tab') === 'dashboard') loadStats();
+          });
+        });
+
+        el('btnRefreshStats').addEventListener('click', loadStats);
+        el('btnPrune').addEventListener('click', function () {
+          api('/maintenance/prune', { method: 'POST' }).then(function (r) {
+            status('Pruned ' + r.removed + ' stale record(s).'); loadStats();
+          }).catch(function (e) { status(e.message, true); });
+        });
+
+        el('selLibrary').addEventListener('change', function () { PRM.pageIndex = 0; PRM.expanded = {}; loadItems(); });
+        el('btnSearch').addEventListener('click', function () { PRM.pageIndex = 0; PRM.expanded = {}; loadItems(); });
+        el('txtSearch').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); PRM.pageIndex = 0; loadItems(); } });
+        el('btnPrevPage').addEventListener('click', function () { if (PRM.pageIndex > 0) { PRM.pageIndex--; loadItems(); } });
+        el('btnNextPage').addEventListener('click', function () {
+          if ((PRM.pageIndex + 1) * PRM.pageSize < PRM.totalCount) { PRM.pageIndex++; loadItems(); }
+        });
+        el('btnSelectAll').addEventListener('click', function () { setAllChecks(true); });
+        el('btnDeselectAll').addEventListener('click', function () { setAllChecks(false); });
+        el('btnSelectMovies').addEventListener('click', function () { setAllChecks(false); setAllChecks(true, 'Movie'); });
+        el('btnSelectSeries').addEventListener('click', function () { setAllChecks(false); setAllChecks(true, 'Series'); });
+        el('btnSaveRatings').addEventListener('click', function () { saveRatings(false); });
+        el('btnRemoveOverride').addEventListener('click', function () { saveRatings(true); });
+
+        el('btnUsersSelectAll').addEventListener('click', function () {
+          PRM.page.querySelectorAll('.prm-user').forEach(function (c) { c.checked = true; });
+          el('userSelCount').textContent = PRM.page.querySelectorAll('.prm-user:checked').length + ' selected';
+        });
+        el('btnUsersDeselect').addEventListener('click', function () {
+          PRM.page.querySelectorAll('.prm-user').forEach(function (c) { c.checked = false; });
+          el('userSelCount').textContent = '0 selected';
+        });
+        el('btnSaveUsers').addEventListener('click', saveUserPolicy);
+        el('btnSaveSettings').addEventListener('click', saveSettings);
+        el('btnAddCustom').addEventListener('click', function () {
+          var name = el('custName').value.trim();
+          if (!name) { status('Custom rating needs a name.', true); return; }
+          var cfgCustom = (PRM.customRatings = PRM.customRatings || []);
+          cfgCustom.push({
+            id: 'custom-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            displayName: name,
+            system: 'custom',
+            score: parseInt(el('custScore').value) || 0,
+            subScore: parseInt(el('custSub').value) || 0,
+            jellyfinValue: el('custJf').value.trim() || name,
+            aliases: el('custAliases').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean)
+          });
+          status('Custom rating "' + name + '" added (save Settings to persist).');
+        });
+
+        api('/ratings').then(function (ratings) {
+          PRM.ratings = ratings;
+          el('selApplyRating').innerHTML = '<option value="">— choose rating —</option>' + ratingOptions(true);
+          el('selUserMax').innerHTML = '<option value="">— choose —</option><option value="__none__">Unrestricted</option>' + ratingOptions(true);
+          el('selRatingFilter').innerHTML = '<option value="">Any</option>' + ratingOptions(true);
+          el('selUnratedEquiv').innerHTML = ratingOptions(false);
+          renderCatalog();
+          loadConfig();
+        }).catch(function (e) { status(e.message, true); });
+
+        loadLibraries();
+        loadStats();
+      }
+
+      document.addEventListener('pageshow', function (e) {
+        var page = e.target;
+        var root = document.getElementById('ParentalRatingManagerPage');
+        if (!root) return;
+        if (page === root || (page.contains && page.contains(root))) init(root);
+      });
+      // Fallback for immediate injection
+      var self = document.querySelector('#ParentalRatingManagerPage');
+      if (self && self.closest('.page')) { init(self.closest('.page')); }
+    })();
+  </script>
+</div>

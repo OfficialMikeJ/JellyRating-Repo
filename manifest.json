@@ -1,0 +1,18 @@
+﻿{
+    "guid":  "77304605-bb68-4844-8aed-251df4e20e83",
+    "name":  "Parental Rating Manager",
+    "description":  "Manually assign Canadian or US parental ratings to movies, documentaries, TV series and TV seasons (with automatic inheritance), then enforce per-user maximum content levels through Jellyfin\u0027s built-in server-side parental-control engine.",
+    "overview":  "Manage Canadian and US parental ratings and per-user maximum content levels.",
+    "owner":  "OfficialMikeJ",
+    "category":  "General",
+    "versions":  [
+                     {
+                         "version":  "1.0.0.0",
+                         "changelog":  "Initial release",
+                         "targetAbi":  "12.1.0",
+                         "sourceUrl":  "https://repo.mikeshomelabservices.xyz/OfficialMikeJ/JellyRating/raw/branch/main/dist/Jellyfin.Plugin.ParentalRatingManager_1.0.0.0.zip",
+                         "checksum":  "0e690fb4804eeb53c0f5a9ee55c961c1",
+                         "timestamp":  "2026-09-27T16:20:13Z"
+                     }
+                 ]
+}
