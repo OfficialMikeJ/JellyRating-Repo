@@ -10,9 +10,9 @@
                          "version":  "1.0.0.0",
                          "changelog":  "Initial release",
                          "targetAbi":  "12.1.0",
-                         "sourceUrl":  "https://repo.mikeshomelabservices.xyz/OfficialMikeJ/JellyRating/raw/branch/main/dist/Jellyfin.Plugin.ParentalRatingManager_1.0.0.0.zip",
-                         "checksum":  "0e690fb4804eeb53c0f5a9ee55c961c1",
-                         "timestamp":  "2026-09-27T16:20:13Z"
+                         "sourceUrl":  "https://repo.mikeshomelabservices.xyz/api/v1/repos/OfficialMikeJ/JellyRating/raw/dist/Jellyfin.Plugin.ParentalRatingManager_1.0.0.0.zip?token=e7efd2334d93daf889109de496bca5796fd6b148",
+                         "checksum":  "60a727a716d1016f0fb78e3e4bd01fc4",
+                         "timestamp":  "2026-09-27T16:24:55Z"
                      }
                  ]
 }
