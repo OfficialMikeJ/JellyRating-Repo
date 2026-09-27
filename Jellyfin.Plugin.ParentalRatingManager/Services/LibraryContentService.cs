@@ -105,12 +105,72 @@ public sealed class LibraryContentService
 
         var filtered = items
             .Where(i => MatchesRatingFilter(i, filter, ratingId))
-            .Select(ToDto)
+            .Select(i => ToDto(i, root.Name))
             .ToList();
 
         var pageItems = filtered
             .Skip(Math.Max(0, page) * pageSize)
             .Take(Math.Clamp(pageSize, 1, 500))
+            .ToList();
+
+        return new BrowseResultDto
+        {
+            Items = pageItems,
+            TotalCount = filtered.Count,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
+    /// <summary>
+    /// Browse every collection folder at once – the default media view so the
+    /// admin sees all movies/documentaries/series without picking a library.
+    /// </summary>
+    public BrowseResultDto BrowseAll(
+        string? search,
+        BrowseFilter filter,
+        string? ratingId,
+        string? kind,
+        int page,
+        int pageSize)
+    {
+        var kinds = ResolveKinds(kind);
+        var items = new List<(BaseItem Item, string Library)>();
+
+        foreach (var lib in GetLibraries())
+        {
+            var root = _libraryManager.GetItemById(lib.Id) as Folder;
+            if (root is null)
+            {
+                continue;
+            }
+
+            var query = new InternalItemsQuery
+            {
+                Parent = root,
+                Recursive = true,
+                IncludeItemTypes = kinds,
+                OrderBy = [(ItemSortBy.Name, SortOrder.Ascending)],
+                DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions(false)
+            };
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query.SearchTerm = search.Trim();
+            }
+
+            items.AddRange(_libraryManager.GetItemList(query).Select(i => (i, lib.Name)));
+        }
+
+        var filtered = items
+            .Where(t => MatchesRatingFilter(t.Item, filter, ratingId))
+            .OrderBy(t => t.Item.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var pageItems = filtered
+            .Skip(Math.Max(0, page) * pageSize)
+            .Take(Math.Clamp(pageSize, 1, 500))
+            .Select(t => ToDto(t.Item, t.Library))
             .ToList();
 
         return new BrowseResultDto
@@ -139,7 +199,7 @@ public sealed class LibraryContentService
             DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions(false)
         };
 
-        return _libraryManager.GetItemList(query).Select(ToDto).ToList();
+        return _libraryManager.GetItemList(query).Select(i => ToDto(i)).ToList();
     }
 
     /// <summary>Dashboard statistics (kept cheap – counts only).</summary>
@@ -192,7 +252,7 @@ public sealed class LibraryContentService
     public int PruneStaleRecords(Func<Guid, bool> userExists)
         => _store.Prune(id => _libraryManager.GetItemById(id) is not null, userExists);
 
-    private MediaItemDto ToDto(BaseItem item)
+    private MediaItemDto ToDto(BaseItem item, string? libraryName = null)
     {
         var effective = _effectiveRating.Resolve(item);
         var kind = RatingAssignmentService.Classify(item) ?? RatingAssignmentKind.Movie;
@@ -202,6 +262,7 @@ public sealed class LibraryContentService
             Name = item.Name ?? string.Empty,
             Kind = kind.ToString(),
             ProductionYear = item.ProductionYear,
+            LibraryName = libraryName,
             OfficialRating = item.OfficialRating,
             Effective = effective,
             HasManualOverride = _store.TryGetAssignment(item.Id, out _)

@@ -8,12 +8,12 @@
         "category":  "General",
         "versions":  [
                          {
-                             "version":  "1.0.1.0",
+                             "version":  "1.0.2.0",
                              "changelog":  "Initial release",
                              "targetAbi":  "12.1.0",
-                             "sourceUrl":  "https://officialmikej.github.io/JellyRating-Repo/dist/Jellyfin.Plugin.ParentalRatingManager_1.0.1.0.zip",
-                             "checksum":  "8e19b6bca8f32d5862eefea91382cae2",
-                             "timestamp":  "2026-09-27T17:05:04Z"
+                             "sourceUrl":  "https://officialmikej.github.io/JellyRating-Repo/dist/Jellyfin.Plugin.ParentalRatingManager_1.0.2.0.zip",
+                             "checksum":  "8a6f01154ef5d21d861f1f094236e100",
+                             "timestamp":  "2026-09-27T17:21:36Z"
                          }
                      ]
     }

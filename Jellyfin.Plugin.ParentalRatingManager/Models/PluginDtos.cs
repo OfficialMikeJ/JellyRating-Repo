@@ -27,6 +27,9 @@ public sealed class MediaItemDto
 
     public int? ProductionYear { get; set; }
 
+    /// <summary>Name of the library (collection folder) the item belongs to.</summary>
+    public string? LibraryName { get; set; }
+
     public string? OfficialRating { get; set; }
 
     public EffectiveRating Effective { get; set; } = new(null, null, EffectiveRatingSource.Unrated, null, null, null);

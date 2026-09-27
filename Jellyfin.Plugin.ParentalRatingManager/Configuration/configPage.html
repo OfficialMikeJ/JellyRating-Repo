@@ -63,13 +63,13 @@
         <h2>Media Ratings</h2>
         <p class="prm-hint">Assign a US or Canadian parental rating to movies, documentaries, series or seasons.</p>
         <ol class="prm-steps">
-          <li>Pick a <b>Library</b>, then search or filter the list (rating filter matches the effective rating).</li>
-          <li>Tick the checkbox on one or more rows — or use Select All / Select All Movies / Select All Series.</li>
-          <li>For a series, click <b>▸ seasons</b> to rate individual seasons. Season ratings override the series rating; episodes always inherit — they are never listed.</li>
-          <li>Choose a <b>Rating</b> and press <b>Save Ratings</b> — or <b>Remove Override</b> to fall back to the metadata rating.</li>
+          <li>Your media loads automatically — every movie, documentary and series from all libraries. Narrow it with the Library/Type/Search filters if you want.</li>
+          <li>To rate <b>one</b> item: use that row's <b>Set rating</b> dropdown — it saves instantly.</li>
+          <li>To rate <b>many</b> at once: tick the checkboxes (or Select All), choose a <b>Rating</b> in the bar below, press <b>Save Ratings</b>. "Remove Override" falls back to the metadata rating.</li>
+          <li>Series cascade to every season and episode automatically. Click <b>▸ seasons</b> to rate one season differently.</li>
         </ol>
         <div class="prm-toolbar">
-          <label>Library: <select id="selLibrary" class="emby-select-withcolor emby-select"><option value="">— choose —</option></select></label>
+          <label>Library: <select id="selLibrary" class="emby-select-withcolor emby-select"><option value="">All libraries</option></select></label>
           <label>Search: <input id="txtSearch" type="search" class="emby-input" placeholder="Title…" style="width:11em"/></label>
           <label>Type: <select id="selKind" class="emby-select-withcolor emby-select"><option value="">All</option><option value="movies">Movies/Docs</option><option value="series">Series</option></select></label>
           <label>Show: <select id="selFilter" class="emby-select-withcolor emby-select"><option value="All">All</option><option value="Rated">Rated</option><option value="Unrated">Unrated</option><option value="ManuallyRated">Manually Rated</option></select></label>
@@ -89,8 +89,8 @@
           <button type="button" class="emby-button button-flat" id="btnRemoveOverride">Remove Override</button>
         </div>
         <table class="prm-table">
-          <thead><tr><th style="width:2em"></th><th>Title</th><th style="width:6em">Kind</th><th style="width:5em">Year</th><th style="width:16em">Effective rating</th></tr></thead>
-          <tbody id="mediaBody"><tr><td colspan="5">Select a library to begin.</td></tr></tbody>
+          <thead><tr><th style="width:2em"></th><th>Title</th><th style="width:6em">Kind</th><th style="width:5em">Year</th><th style="width:9em">Library</th><th style="width:14em">Effective rating</th><th style="width:11em">Set rating</th></tr></thead>
+          <tbody id="mediaBody"><tr><td colspan="7">Loading…</td></tr></tbody>
         </table>
         <div class="prm-toolbar">
           <button type="button" class="emby-button button-flat" id="btnPrevPage">◀ Prev</button>
@@ -245,7 +245,7 @@
         api('/libraries').then(function (libs) {
           PRM.libraries = libs;
           var sel = el('selLibrary');
-          sel.innerHTML = '<option value="">— choose —</option>';
+          sel.innerHTML = '<option value="">All libraries</option>';
           libs.forEach(function (l) {
             sel.innerHTML += '<option value="' + l.id + '">' + l.name + (l.collectionType ? ' (' + l.collectionType + ')' : '') + '</option>';
           });
@@ -254,22 +254,43 @@
 
       function loadItems() {
         var libId = el('selLibrary').value;
-        if (!libId) { el('mediaBody').innerHTML = '<tr><td colspan="5">Select a library to begin.</td></tr>'; return; }
         var q = '?page=' + PRM.pageIndex + '&pageSize=' + PRM.pageSize
           + '&filter=' + encodeURIComponent(el('selFilter').value)
           + '&kind=' + encodeURIComponent(el('selKind').value)
           + '&ratingId=' + encodeURIComponent(el('selRatingFilter').value)
           + '&search=' + encodeURIComponent(el('txtSearch').value);
-        api('/libraries/' + libId + '/items' + q).then(function (res) {
+        api((libId ? '/libraries/' + libId + '/items' : '/items') + q).then(function (res) {
           PRM.totalCount = res.totalCount;
           renderItems(res.items);
           el('pageInfo').textContent = 'Page ' + (res.page + 1) + ' — ' + res.totalCount + ' item(s)';
         }).catch(function (e) { status(e.message, true); });
       }
 
+      // Per-row rating dropdown — pre-populated from the catalogue; selecting a
+      // value saves that item immediately.
+      function ratingSelectHtml(item) {
+        var sel = item.effective && item.effective.ratingId ? item.effective.ratingId : '';
+        return '<select class="prm-set emby-select-withcolor emby-select" data-id="' + item.id + '">'
+          + '<option value="">Auto (metadata)</option>' + ratingOptionsWithSelection(sel) + '</select>';
+      }
+
+      function ratingOptionsWithSelection(selectedId) {
+        var html = '';
+        ['us', 'ca', 'common', 'custom'].forEach(function (sys) {
+          var group = PRM.ratings.filter(function (r) { return r.system === sys; });
+          if (!group.length) return;
+          html += '<optgroup label="' + (sys === 'us' ? 'United States' : sys === 'ca' ? 'Canada' : sys === 'common' ? 'Other' : 'Custom') + '">';
+          group.forEach(function (r) {
+            html += '<option value="' + r.id + '"' + (r.id === selectedId ? ' selected' : '') + '>' + r.displayName + '</option>';
+          });
+          html += '</optgroup>';
+        });
+        return html;
+      }
+
       function renderItems(items) {
         var body = el('mediaBody');
-        if (!items.length) { body.innerHTML = '<tr><td colspan="5">No items match.</td></tr>'; return; }
+        if (!items.length) { body.innerHTML = '<tr><td colspan="7">No items match.</td></tr>'; return; }
         var html = '';
         items.forEach(function (i) {
           html += '<tr data-id="' + i.id + '">'
@@ -277,7 +298,9 @@
             + '<td>' + (i.kind === 'Series' ? '<span class="prm-expand" data-series="' + i.id + '">▸ seasons</span>' : '') + escapeHtml(i.name) + '</td>'
             + '<td>' + i.kind + (i.kind === 'Series' && i.seasonCount ? ' (' + i.seasonCount + ')' : '') + '</td>'
             + '<td>' + (i.productionYear || '') + '</td>'
-            + '<td>' + ratingBadge(i.effective) + '</td></tr>';
+            + '<td>' + escapeHtml(i.libraryName || '') + '</td>'
+            + '<td><span class="prm-effective">' + ratingBadge(i.effective) + '</span></td>'
+            + '<td>' + ratingSelectHtml(i) + '</td></tr>';
         });
         body.innerHTML = html;
         bindRowEvents();
@@ -310,8 +333,9 @@
             tr.className = 'prm-seasonrow';
             tr.setAttribute('data-series', seriesId);
             tr.innerHTML = '<td><input type="checkbox" class="prm-check" data-id="' + s.id + '" data-kind="Season"/></td>'
-              + '<td>' + escapeHtml(s.name) + '</td><td>Season</td><td>' + (s.productionYear || '') + '</td>'
-              + '<td>' + ratingBadge(s.effective) + '</td>';
+              + '<td>' + escapeHtml(s.name) + '</td><td>Season</td><td>' + (s.productionYear || '') + '</td><td></td>'
+              + '<td><span class="prm-effective">' + ratingBadge(s.effective) + '</span></td>'
+              + '<td>' + ratingSelectHtml(s) + '</td>';
             after.parentNode.insertBefore(tr, after.nextSibling);
             after = tr;
           });
@@ -334,6 +358,27 @@
           if (!kindFilter || c.getAttribute('data-kind') === kindFilter) c.checked = on;
         });
         updateSelCount();
+      }
+
+      // Instant per-row save when a Set-rating dropdown changes.
+      function assignRow(sel) {
+        var id = sel.getAttribute('data-id');
+        var ratingId = sel.value || null;
+        sel.disabled = true;
+        api('/items/assign', { method: 'POST', body: { itemIds: [id], ratingId: ratingId } }).then(function (res) {
+          sel.disabled = false;
+          if (res.failed === 0) {
+            var label = ratingId ? sel.selectedOptions[0].text : 'metadata';
+            status('Saved — "' + label + '".');
+            api('/items/' + id).then(function (d) {
+              var tr = sel.closest('tr');
+              var cell = tr && tr.querySelector('.prm-effective');
+              if (cell) cell.innerHTML = ratingBadge(d.effective);
+            });
+          } else {
+            status('Save failed for that item — check the server log.', true);
+          }
+        }).catch(function (e) { sel.disabled = false; status('Unable to save. ' + e.message, true); });
       }
 
       function saveRatings(remove) {
@@ -466,6 +511,10 @@
         el('btnSelectSeries').addEventListener('click', function () { setAllChecks(false); setAllChecks(true, 'Series'); });
         el('btnSaveRatings').addEventListener('click', function () { saveRatings(false); });
         el('btnRemoveOverride').addEventListener('click', function () { saveRatings(true); });
+        el('mediaBody').addEventListener('change', function (e) {
+          var s = e.target && e.target.closest ? e.target.closest('.prm-set') : null;
+          if (s) assignRow(s);
+        });
 
         el('btnUsersSelectAll').addEventListener('click', function () {
           PRM.page.querySelectorAll('.prm-user').forEach(function (c) { c.checked = true; });
@@ -501,6 +550,7 @@
           el('selUnratedEquiv').innerHTML = ratingOptions(false);
           renderCatalog();
           loadConfig();
+          loadItems();
         }).catch(function (e) { status(e.message, true); });
 
         loadLibraries();

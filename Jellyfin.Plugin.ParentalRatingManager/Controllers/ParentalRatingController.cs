@@ -98,6 +98,24 @@ public class ParentalRatingController : ControllerBase
         }
     }
 
+    /// <summary>Browse all libraries at once – the default media list.</summary>
+    [HttpGet("items")]
+    public ActionResult<BrowseResultDto> BrowseAllItems(
+        [FromQuery] string? search = null,
+        [FromQuery] string? filter = null,
+        [FromQuery] string? ratingId = null,
+        [FromQuery] string? kind = null,
+        [FromQuery] int page = 0,
+        [FromQuery] int pageSize = 100)
+    {
+        if (!Enum.TryParse<LibraryContentService.BrowseFilter>(filter ?? "All", true, out var browseFilter))
+        {
+            return BadRequest($"Unknown filter '{filter}'.");
+        }
+
+        return Ok(_library.BrowseAll(search, browseFilter, ratingId, kind, page, pageSize));
+    }
+
     /// <summary>Seasons belonging to a series.</summary>
     [HttpGet("items/{itemId}/seasons")]
     public ActionResult<IReadOnlyList<MediaItemDto>> GetSeasons([FromRoute] Guid itemId)
