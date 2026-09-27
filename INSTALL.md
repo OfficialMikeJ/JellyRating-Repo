@@ -39,9 +39,26 @@ The plugin DLL lands in
 
 2. Commit `manifest.json` and `dist\Jellyfin.Plugin.ParentalRatingManager_1.0.0.0.zip`
    to your Gitea repo.
-3. In Jellyfin: Dashboard → Plugins → Repositories → **+**, and add the raw URL
-   of `manifest.json`, e.g.
-   `https://<gitea>/<owner>/<repo>/raw/branch/main/manifest.json`
+
+   If your Gitea sits behind Cloudflare (or similar), raw endpoints are cached
+   for hours — append `&v=N` (incremented per release) to both the manifest URL
+   and `sourceUrl` so updated artifacts bypass the stale cache.
+
+   On sign-in-required instances, use Gitea's tokenized API raw endpoint for
+   both URLs:
+   `/api/v1/repos/<owner>/<repo>/raw/<path>?token=<read-repo-token>`
+3. In Jellyfin: Dashboard → Plugins → Repositories → **+**, and add the
+   manifest URL:
+
+   ```
+   https://officialmikej.github.io/JellyRating-Repo/manifest.json
+   ```
+
+   The manifest + zip are served by GitHub Pages (anonymous +
+   `application/json`), while the Gitea repo at
+   `https://repo.mikeshomelabservices.xyz/OfficialMikeJ/JellyRating` remains the
+   source of truth. The Gitea instance requires sign-in for all anonymous
+   requests, which is why the release artifacts are mirrored to Pages.
 4. The plugin appears in the catalogue; install, restart, configure.
 
 ## How enforcement works
