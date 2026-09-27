@@ -76,7 +76,9 @@ $manifest = @(
 )
 
 $manifestPath = Join-Path $root 'manifest.json'
-$manifest | ConvertTo-Json -Depth 6 | Set-Content -Path $manifestPath -Encoding UTF8
+# -InputObject preserves the array shape — piping unwraps a single-element array
+# to a bare object, which Jellyfin cannot deserialize (it expects PackageInfo[]).
+ConvertTo-Json -Depth 6 -InputObject $manifest | Set-Content -Path $manifestPath -Encoding UTF8
 
 Write-Host ''
 Write-Host "Done:"

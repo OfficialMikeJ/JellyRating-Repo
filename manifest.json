@@ -1,18 +1,20 @@
-﻿{
-    "guid":  "77304605-bb68-4844-8aed-251df4e20e83",
-    "name":  "Parental Rating Manager",
-    "description":  "Manually assign Canadian or US parental ratings to movies, documentaries, TV series and TV seasons (with automatic inheritance), then enforce per-user maximum content levels through Jellyfin\u0027s built-in server-side parental-control engine.",
-    "overview":  "Manage Canadian and US parental ratings and per-user maximum content levels.",
-    "owner":  "OfficialMikeJ",
-    "category":  "General",
-    "versions":  [
-                     {
-                         "version":  "1.0.0.0",
-                         "changelog":  "Initial release",
-                         "targetAbi":  "12.1.0",
-                         "sourceUrl":  "https://repo.mikeshomelabservices.xyz/api/v1/repos/OfficialMikeJ/JellyRating/raw/dist/Jellyfin.Plugin.ParentalRatingManager_1.0.0.0.zip?token=e7efd2334d93daf889109de496bca5796fd6b148\u0026v=1",
-                         "checksum":  "4b0104e006d25858355bed1f2da01c38",
-                         "timestamp":  "2026-09-27T16:26:12Z"
-                     }
-                 ]
-}
+﻿[
+    {
+        "guid":  "77304605-bb68-4844-8aed-251df4e20e83",
+        "name":  "Parental Rating Manager",
+        "description":  "Manually assign Canadian or US parental ratings to movies, documentaries, TV series and TV seasons (with automatic inheritance), then enforce per-user maximum content levels through Jellyfin\u0027s built-in server-side parental-control engine.",
+        "overview":  "Manage Canadian and US parental ratings and per-user maximum content levels.",
+        "owner":  "OfficialMikeJ",
+        "category":  "General",
+        "versions":  [
+                         {
+                             "version":  "1.0.0.0",
+                             "changelog":  "Initial release",
+                             "targetAbi":  "12.1.0",
+                             "sourceUrl":  "https://repo.mikeshomelabservices.xyz/api/v1/repos/OfficialMikeJ/JellyRating/raw/dist/Jellyfin.Plugin.ParentalRatingManager_1.0.0.0.zip?token=e7efd2334d93daf889109de496bca5796fd6b148\u0026v=1",
+                             "checksum":  "9e06449c4defeadc299e33d2f4e96596",
+                             "timestamp":  "2026-09-27T16:44:01Z"
+                         }
+                     ]
+    }
+]
