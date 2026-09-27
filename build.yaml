@@ -1,6 +1,6 @@
 name: "Parental Rating Manager"
 guid: "77304605-bb68-4844-8aed-251df4e20e83"
-version: "1.0.0.0"
+version: "1.0.1.0"
 targetAbi: "12.1.0"
 framework: "net10.0"
 overview: "Manage Canadian and US parental ratings and per-user maximum content levels."

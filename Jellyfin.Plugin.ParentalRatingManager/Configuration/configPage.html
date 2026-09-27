@@ -24,6 +24,9 @@
     #ParentalRatingManagerPage .prm-seasonrow td { padding-left:2.2em; }
     #ParentalRatingManagerPage .prm-expand { cursor:pointer; opacity:.75; margin-right:.4em; user-select:none; }
     #ParentalRatingManagerPage input[type="checkbox"].prm-check { transform:scale(1.3); }
+    #ParentalRatingManagerPage .prm-hint { opacity:.75; font-size:.9em; margin:.15em 0 .8em; }
+    #ParentalRatingManagerPage ol.prm-steps { margin:.4em 0 .8em; padding-left:1.4em; opacity:.85; font-size:.92em; }
+    #ParentalRatingManagerPage ol.prm-steps li { margin-bottom:.15em; }
   </style>
   <div data-role="content">
     <div class="content-primary">
@@ -40,6 +43,7 @@
       <!-- ============ DASHBOARD ============ -->
       <div class="prm-section prm-active" id="prm-sec-dashboard">
         <h2>Overview</h2>
+        <p class="prm-hint">A snapshot of what the plugin is managing. Stale records are plugin entries for media or users that no longer exist — use "Prune stale records" to clean them up.</p>
         <div class="prm-cards">
           <div class="prm-card"><div class="num" id="statAssigned">–</div><div class="lbl">Plugin-rated items</div></div>
           <div class="prm-card"><div class="num" id="statUsers">–</div><div class="lbl">Restricted users</div></div>
@@ -57,6 +61,13 @@
       <!-- ============ MEDIA RATINGS ============ -->
       <div class="prm-section" id="prm-sec-media">
         <h2>Media Ratings</h2>
+        <p class="prm-hint">Assign a US or Canadian parental rating to movies, documentaries, series or seasons.</p>
+        <ol class="prm-steps">
+          <li>Pick a <b>Library</b>, then search or filter the list (rating filter matches the effective rating).</li>
+          <li>Tick the checkbox on one or more rows — or use Select All / Select All Movies / Select All Series.</li>
+          <li>For a series, click <b>▸ seasons</b> to rate individual seasons. Season ratings override the series rating; episodes always inherit — they are never listed.</li>
+          <li>Choose a <b>Rating</b> and press <b>Save Ratings</b> — or <b>Remove Override</b> to fall back to the metadata rating.</li>
+        </ol>
         <div class="prm-toolbar">
           <label>Library: <select id="selLibrary" class="emby-select-withcolor emby-select"><option value="">— choose —</option></select></label>
           <label>Search: <input id="txtSearch" type="search" class="emby-input" placeholder="Title…" style="width:11em"/></label>
@@ -91,7 +102,12 @@
       <!-- ============ USER RESTRICTIONS ============ -->
       <div class="prm-section" id="prm-sec-users">
         <h2>User Restrictions</h2>
-        <p>Select users and assign a maximum permitted content level. Content above the level is hidden and blocked for every Jellyfin client.</p>
+        <p class="prm-hint">Select users and assign a maximum permitted content level. Content above the level is hidden <b>and</b> blocked for every Jellyfin client — the user cannot bypass it by guessing an item id or playback URL. Administrators are never restricted.</p>
+        <ol class="prm-steps">
+          <li>Tick one or more users.</li>
+          <li>Choose the <b>maximum allowed rating</b> — anything above it is blocked; "Unrestricted" removes the limit.</li>
+          <li>Press <b>Save user policy</b>. What unrated content does is decided by the setting on the Settings tab.</li>
+        </ol>
         <div class="prm-toolbar">
           <button type="button" class="emby-button button-flat" id="btnUsersSelectAll">Select All</button>
           <button type="button" class="emby-button button-flat" id="btnUsersDeselect">Deselect All</button>
@@ -110,12 +126,13 @@
       <!-- ============ RATING SYSTEMS ============ -->
       <div class="prm-section" id="prm-sec-ratings">
         <h2>Rating Systems</h2>
-        <p>Normalized rating catalogue. Raw metadata values are normalized before evaluation; Canadian and US levels are compared through a fixed score table, never by name.</p>
+        <p class="prm-hint">The catalogue of rating levels the plugin offers in Media Ratings and User Restrictions. Raw metadata values are normalized before evaluation; US and Canadian levels compare through a fixed numeric score table — never by name — so cross-system limits work correctly.</p>
         <table class="prm-table">
           <thead><tr><th>System</th><th>Id</th><th>Display</th><th>Level (score/sub)</th></tr></thead>
           <tbody id="ratingsBody"></tbody>
         </table>
         <h3>Add custom rating</h3>
+        <p class="prm-hint">Define your own level. <b>Score</b> ≈ minimum age (US-R = 17). <b>Sub-score</b> breaks ties inside a score (CA 18A = 18/1 sits just below 18+ = 18/2). <b>Jellyfin value</b> is the string written onto items — something Jellyfin understands (<code>US:R</code>, <code>CA:18A</code>, or a plain number like <code>19</code>); if it can't be resolved the plugin substitutes a verified equivalent so enforcement never silently weakens. <b>Aliases</b> let metadata like "18-A" map to the level.</p>
         <div class="prm-toolbar">
           <label>Name: <input id="custName" class="emby-input" style="width:8em" placeholder="e.g. Family"/></label>
           <label>Score: <input id="custScore" type="number" class="emby-input" style="width:5em" placeholder="10"/></label>
@@ -129,15 +146,17 @@
       <!-- ============ SETTINGS ============ -->
       <div class="prm-section" id="prm-sec-settings">
         <h2>Settings</h2>
+        <p class="prm-hint">Plugin-wide behaviour — press <b>Save Settings</b> to apply. Persisted across restarts.</p>
         <h3>Unrated content</h3>
+        <p class="prm-hint">Decides what <b>restricted</b> users can see when an item has no rating at all: allow it, block it, or enforce unrated as if it were a chosen level (pick the level in the dropdown below).</p>
         <label class="checkboxContainer"><input type="radio" name="unratedPolicy" value="0" class="emby-checkbox"/><span>Allow unrated content for restricted users</span></label>
         <label class="checkboxContainer"><input type="radio" name="unratedPolicy" value="1" class="emby-checkbox"/><span>Block unrated content for restricted users</span></label>
         <label class="checkboxContainer"><input type="radio" name="unratedPolicy" value="2" class="emby-checkbox"/><span>Treat unrated content as rating:</span></label>
         <div class="prm-toolbar"><select id="selUnratedEquiv" class="emby-select-withcolor emby-select"></select></div>
         <h3>General</h3>
-        <label class="checkboxContainer"><input type="checkbox" id="chkDebug" class="emby-checkbox"/><span>Enable verbose debug logging</span></label>
+        <label class="checkboxContainer"><input type="checkbox" id="chkDebug" class="emby-checkbox"/><span>Enable verbose debug logging</span><span class="prm-hint" style="display:inline;margin-left:.5em">— writes detailed plugin diagnostics to the Jellyfin server log; leave off unless troubleshooting</span></label>
         <div class="prm-toolbar">
-          <label>Ask for confirmation above <input id="numBulk" type="number" class="emby-input" style="width:5em"/> selected items</label>
+          <label>Ask for confirmation above <input id="numBulk" type="number" class="emby-input" style="width:5em" title="Extra 'are you sure?' prompt when a bulk rating change touches at least this many items"/> selected items</label>
           <button type="button" class="emby-button button-flat raised" id="btnSaveSettings" style="background:#00a4dc">Save Settings</button>
         </div>
         <p id="dataPath" style="opacity:.6;font-size:.85em"></p>
@@ -169,8 +188,20 @@
         }).then(function (r) {
           if (r.status === 204) return null;
           if (!r.ok) return r.text().then(function (t) { throw new Error(t || ('HTTP ' + r.status)); });
-          return r.json();
+          return r.json().then(decap);
         });
+      }
+
+      // Jellyfin's API serializes PascalCase (Id, Name, ...). Normalize every
+      // response key to camelCase so the UI can rely on one convention.
+      function decap(o) {
+        if (Array.isArray(o)) return o.map(decap);
+        if (o !== null && typeof o === 'object' && o.constructor === Object) {
+          var n = {};
+          for (var k in o) n[k.charAt(0).toLowerCase() + k.slice(1)] = decap(o[k]);
+          return n;
+        }
+        return o;
       }
 
       // ---------- shared helpers ----------
